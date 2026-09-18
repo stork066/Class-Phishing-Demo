@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mail - Sanjay Tarakanambi - Outlook (Training Simulation)</title>
+<style>
+  :root {
+    --brand: #0f6cbd;
+    --brand-hover: #115ea3;
+    --brand-pressed: #0c3b5e;
+    --brand-tint: #ebf3fc;
+    --brand-tint2: #cfe4fa;
+    --text: #242424;
+    --text2: #424242;
+    --text3: #616161;
+    --text4: #707070;
+    --border: #e0e0e0;
+    --border2: #ebebeb;
+    --hover: #f5f5f5;
+    --pressed: #e0e0e0;
+    --bg2: #fafafa;
+    --bg3: #f0f0f0;
+    --canvas: #f0f0f0;
+    --green: #107c10;
+    --green-bg: #dff6dd;
+    --red: #c50f1f;
+    --red-bg: #fde7e9;
+    --amber: #835b00;
+    --amber-bg: #fff4ce;
+    --amber-border: #f2c661;
+    --font: "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    font-family: var(--font);
+    font-size: 14px;
+    color: var(--text);
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font-family: inherit; }
+  svg { display: block; }
+
+  /* ---------- Training controls (in ribbon tab row) ---------- */
+  .ribbon-tools {
+    margin-left: auto; align-self: center;
+    display: flex; align-items: center; gap: 8px; padding-right: 12px;
+  }
+  .score-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 26px;
+    background: #fff;
+    border: 1px solid #d1d1d1;
+    border-radius: 5px;
+    padding: 0 10px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .score-chip .score-num { color: var(--brand); font-size: 14px; }
+  .score-chip .score-sub { color: var(--text3); font-weight: 400; font-size: 12px; }
+  .reset-btn {
+    height: 26px;
+    background: #fff;
+    border: 1px solid #d1d1d1;
+    border-radius: 5px;
+    padding: 0 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .reset-btn:hover { background: var(--hover); }
+  .reset-btn:active { background: var(--pressed); }
+
+  /* ---------- OWA frame ---------- */
+  .owa { flex: 1; display: flex; flex-direction: column; min-height: 0; background: var(--canvas); }
+
+  /* Top bar */
+  .topbar {
+    height: 48px;
+    background: var(--brand);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .topbar-left { display: flex; align-items: center; height: 100%; }
+  .waffle {
+    width: 48px; height: 48px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: #fff; background: transparent; border: 0;
+  }
+  .waffle:hover { background: rgba(255,255,255,0.12); }
+  .app-title { font-size: 16px; font-weight: 600; padding: 0 8px 0 4px; letter-spacing: 0.01em; }
+  .search-wrap { margin-left: 150px; width: 356px; max-width: 30vw; }
+  .search-box {
+    height: 30px;
+    background: #fff;
+    border-radius: 6px;
+    display: flex; align-items: center;
+    padding: 0 8px 0 12px;
+    color: var(--text2);
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.06);
+  }
+  .search-box input {
+    flex: 1; border: 0; outline: 0; background: transparent;
+    font-family: inherit; font-size: 14px; color: var(--text); margin-left: 8px;
+  }
+  .search-box input::placeholder { color: var(--text2); }
+  .search-box .search-filter { display: none; }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; height: 100%; padding-right: 6px; }
+  .top-icon {
+    width: 48px; height: 48px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; background: transparent; border: 0; cursor: pointer; position: relative;
+  }
+  .top-icon:hover { background: rgba(255,255,255,0.12); }
+  .top-icon .badge {
+    position: absolute; top: 9px; right: 7px;
+    background: #d13438; color: #fff; font-size: 10px; font-weight: 600;
+    border-radius: 8px; min-width: 16px; height: 16px; line-height: 16px; text-align: center; padding: 0 4px;
+  }
+  .me-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: #e8eef7; color: #3b4a63;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; margin: 0 8px 0 8px;
+    border: 2px solid rgba(255,255,255,0.85);
+    cursor: pointer;
+  }
+  .me-wrap { position: relative; height: 100%; display: flex; align-items: center; }
+  .me-card {
+    position: absolute; top: 44px; right: 8px; z-index: 40;
+    display: flex; align-items: center; gap: 12px;
+    background: #fff; color: var(--text);
+    border: 1px solid var(--border); border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.16);
+    padding: 12px 16px; white-space: nowrap;
+    opacity: 0; visibility: hidden; transform: translateY(-4px);
+    transition: opacity .12s, transform .12s, visibility .12s;
+  }
+  .me-wrap:hover .me-card, .me-wrap:focus-within .me-card { opacity: 1; visibility: visible; transform: translateY(0); }
+  .me-card-avatar {
+    width: 40px; height: 40px; border-radius: 50%; background: #4f6bed; color: #fff;
+    display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px;
+  }
+  .me-card-name { font-size: 14px; font-weight: 600; }
+  .me-card-mail { font-size: 12px; color: var(--text3); margin-top: 2px; }
+
+  /* Ribbon (simplified, new Outlook) */
+  .ribbon { flex-shrink: 0; background: var(--canvas); padding: 0 0 8px 0; }
+  .ribbon-tabs { display: flex; align-items: center; height: 36px; padding: 0 12px 0 6px; gap: 0; }
+  .hamburger {
+    width: 32px; height: 30px; display: flex; align-items: center; justify-content: center;
+    border: 0; background: transparent; color: var(--text); border-radius: 4px; cursor: pointer; margin-right: 10px;
+  }
+  .hamburger:hover { background: rgba(0,0,0,.05); }
+  .ribbon-tab {
+    padding: 5px 8px; font-size: 14px; color: var(--text); cursor: pointer; position: relative;
+    border: 0; background: transparent; border-radius: 4px; margin-right: 4px;
+  }
+  .ribbon-tab:hover { background: rgba(0,0,0,.05); }
+  .ribbon-tab.active { font-weight: 600; }
+  .ribbon-tab.active::after {
+    content: ""; position: absolute; left: 8px; right: 8px; bottom: -2px; height: 3px;
+    background: var(--brand); border-radius: 3px;
+  }
+  .cmd-row { display: flex; align-items: center; gap: 10px; padding: 0 12px 0 3px; }
+  .cmdbar {
+    flex: 1; min-width: 0; height: 40px; display: flex; align-items: center; padding: 0 8px; gap: 1px;
+    background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.10), 0 0 0 1px rgba(0,0,0,.04);
+    overflow: hidden;
+  }
+  .newmail {
+    display: inline-flex; align-items: center; height: 30px;
+    background: var(--brand); color: #fff; border: 0; border-radius: 5px;
+    font-weight: 600; font-size: 14px; cursor: pointer; margin-right: 8px; overflow: hidden; flex-shrink: 0;
+  }
+  .newmail .nm-main { display: flex; align-items: center; gap: 8px; padding: 0 10px 0 10px; height: 100%; }
+  .newmail .nm-main:hover { background: var(--brand-hover); }
+  .newmail .nm-chev { display: flex; align-items: center; padding: 0 8px; height: 100%; border-left: 1px solid rgba(255,255,255,0.35); }
+  .newmail .nm-chev:hover { background: var(--brand-hover); }
+  .cmd {
+    display: inline-flex; align-items: center; gap: 4px;
+    height: 30px; padding: 0 5px; border-radius: 4px; flex-shrink: 0;
+    background: transparent; border: 0; color: var(--text); font-size: 14px; cursor: pointer;
+  }
+  .cmd:hover { background: var(--hover); }
+  .cmd:active { background: var(--pressed); }
+  .cmd svg { color: var(--brand); }
+  .cmd.muted svg { color: #8a8a8a; }
+  .cmd .chev { color: #a0a0a0; margin-left: -2px; }
+  .cmd.outlined { border: 1px solid #c8c8c8; padding: 0 9px; height: 30px; border-radius: 5px 0 0 5px; }
+  .cmd.outlined + .cmd.outlined-chev { border: 1px solid #c8c8c8; border-left: 0; border-radius: 0 5px 5px 0; padding: 0 7px; margin-left: 0; height: 30px; }
+  .cmd-sep { width: 1px; height: 22px; background: var(--border); margin: 0 5px; flex-shrink: 0; }
+  .cmd-spacer { flex: 1; min-width: 20px; }
+  .copilot-pill {
+    width: 44px; height: 40px; border-radius: 8px; background: #fff; flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,.10), 0 0 0 1px rgba(0,0,0,.04);
+    display: flex; align-items: center; justify-content: center; cursor: pointer; border: 0;
+  }
+  .copilot-pill:hover { background: var(--hover); }
+  .copilot-logo, .teams-logo { display: block; object-fit: contain; pointer-events: none; }
+  .app-btn .copilot-logo { width: 24px; height: 24px; }
+
+  /* Main area */
+  .main { flex: 1; display: flex; min-height: 0; padding: 0 11px 10px 0; gap: 12px; }
+
+  /* App bar */
+  .shell { flex: 1; display: flex; min-height: 0; }
+  .content { flex: 1; min-width: 0; display: flex; flex-direction: column; min-height: 0; }
+  .appbar {
+    width: 50px; background: transparent;
+    display: flex; flex-direction: column; align-items: center; padding-top: 2px; gap: 8px; flex-shrink: 0;
+  }
+  .app-btn {
+    width: 36px; height: 38px; border-radius: 6px; border: 0; background: transparent;
+    display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative;
+  }
+  .app-btn svg { width: 22px; height: 22px;
+  }
+  .app-btn:hover { background: rgba(0,0,0,.05); }
+  .app-btn.active::before {
+    content: ""; position: absolute; left: -4px; top: 9px; bottom: 9px; width: 3px;
+    background: var(--brand); border-radius: 0 3px 3px 0;
+  }
+
+  /* Folder pane */
+  .folders {
+    width: 212px; display: flex; flex-direction: column;
+    flex-shrink: 0; overflow-y: auto; padding: 4px 6px 6px 4px; background: transparent;
+  }
+  .folder-section { padding: 4px 0 6px; }
+  .folder-header {
+    display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 8px 0 14px;
+    font-weight: 600; font-size: 15px; color: var(--text); cursor: pointer; border-radius: 4px;
+  }
+  .folder-header:hover { background: rgba(0,0,0,.05); }
+  .folder-header .chev { color: var(--text2); }
+  .folder-header .acct { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .folder {
+    display: flex; align-items: center; height: 36px; padding: 0 10px 0 40px; margin: 0;
+    border-radius: 4px; cursor: pointer; color: var(--text); position: relative; font-size: 14px;
+  }
+  .folder:hover { background: rgba(0,0,0,.05); }
+  .folder.selected { background: #e6e6e6; font-weight: 600; }
+  .folder svg { color: var(--text2); margin-right: 10px; flex-shrink: 0; width: 18px; height: 18px; }
+  .folder .fname { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .folder .fcount { color: var(--brand); font-weight: 400; font-size: 13px; margin-left: 8px; }
+  .folder .fcount.grey { color: var(--text3); font-weight: 400; }
+  .folder.groups { margin-top: 10px; }
+
+  /* Message list (card) */
+  .list {
+    width: 360px; display: flex; flex-direction: column; flex-shrink: 0;
+    background: #fff; border-radius: 8px; overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.06);
+  }
+  .list-head {
+    height: 44px; display: flex; align-items: center; padding: 0 8px 0 0;
+    border-bottom: 1px solid var(--border2);
+  }
+  .list-tabs { display: flex; gap: 2px; height: 100%; align-items: center; padding-left: 66px; }
+  .list-tab {
+    padding: 5px 7px; font-size: 15px; color: var(--text2); cursor: pointer; position: relative;
+    background: transparent; border: 0; font-weight: 400; border-radius: 4px;
+  }
+  .list-tab:hover { background: var(--hover); }
+  .list-tab.active { color: var(--text); font-weight: 600; }
+  .list-tab.active::after {
+    content: ""; position: absolute; left: 7px; right: 7px; bottom: -3px; height: 3px;
+    background: var(--brand); border-radius: 3px;
+  }
+  .list-icons { display: flex; align-items: center; gap: 0; margin-left: 6px; }
+  .list-ic {
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+    background: transparent; border: 0; color: var(--text); border-radius: 4px; cursor: pointer;
+  }
+  .list-ic svg { width: 18px; height: 18px;
+  }
+  .list-ic:hover { background: var(--hover); }
+  .list-filter { display: none; }
+  .list-items { flex: 1; overflow-y: auto; }
+  .group-hdr {
+    display: flex; align-items: center; gap: 14px;
+    font-size: 14px; font-weight: 600; color: var(--text);
+    height: 38px; padding: 0 16px 0 66px; background: #fafafa; border-bottom: 1px solid var(--border2);
+    position: relative;
+  }
+  .group-hdr::before {
+    content: ""; position: absolute; left: 42px; top: 13px; width: 7px; height: 7px;
+    border-right: 1.6px solid var(--text2); border-bottom: 1.6px solid var(--text2); transform: rotate(45deg);
+  }
+  .msg {
+    position: relative; display: flex; gap: 10px; align-items: flex-start;
+    padding: 10px 22px 10px 30px; border-bottom: 1px solid var(--border2);
+    cursor: pointer; background: #fff; min-height: 80px;
+  }
+  .msg:hover { background: var(--hover); }
+  .msg.selected { background: #e9f2fc; }
+  .msg.selected:hover { background: #ddebf9; }
+  .msg.unread::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--brand);
+  }
+  .msg .av {
+    width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; margin-top: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 600; font-size: 12px;
+  }
+  .msg .check {
+    width: 18px; height: 18px; border: 1px solid #616161; border-radius: 3px; flex-shrink: 0;
+    margin: 17px 7px 0 7px; background: #fff; display: none;
+  }
+  .msg.selected .av { display: none; }
+  .msg.selected .check { display: block; }
+  .msg .body { flex: 1; min-width: 0; }
+  .msg .row1 { display: flex; align-items: baseline; }
+  .msg .sender {
+    flex: 1; min-width: 0; font-size: 14px; color: var(--text); font-weight: 400; line-height: 20px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .msg.unread .sender { font-weight: 600; }
+  .msg .row2 { display: flex; align-items: baseline; }
+  .msg .subject {
+    flex: 1; min-width: 0; font-size: 14px; color: var(--text); line-height: 20px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .msg.unread .subject { color: var(--brand); font-weight: 600; }
+  .msg .time { font-size: 13px; color: var(--text3); margin-left: 8px; white-space: nowrap; line-height: 20px; }
+  .msg.unread .time { color: var(--brand); font-weight: 600; }
+  .msg .preview {
+    font-size: 14px; color: var(--text3); line-height: 20px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .msg .meta { display: flex; align-items: center; gap: 6px; margin-top: 3px; }
+  .msg .meta svg { color: var(--text3); }
+  .msg .verdict {
+    font-size: 11px; font-weight: 600; padding: 1px 6px; border-radius: 3px;
+  }
+  .verdict.ok { background: var(--green-bg); color: var(--green); }
+  .verdict.bad { background: var(--red-bg); color: var(--red); }
+
+  /* Reading pane */
+  .reading { flex: 1; min-width: 0; display: flex; flex-direction: column; background: #fff; overflow: hidden; border-radius: 8px; box-shadow: 0 0 0 1px rgba(0,0,0,.06); }
+  .reading-scroll { flex: 1; overflow-y: auto; }
+  .empty-state {
+    height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: var(--text3); gap: 6px; padding: 40px;
+  }
+  .empty-state svg { margin-bottom: 30px; }
+  .empty-state .es-title { font-size: 16px; font-weight: 600; color: var(--text); }
+  .empty-state .es-sub { font-size: 14px; color: var(--text3); }
+  .rp-subject {
+    font-size: 20px; font-weight: 600; line-height: 28px;
+    padding: 18px 24px 8px; color: var(--text); word-break: break-word;
+  }
+  .rp-header { display: flex; align-items: flex-start; padding: 8px 24px 12px; gap: 12px; }
+  .avatar {
+    width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 600; font-size: 15px;
+  }
+  .rp-from { flex: 1; min-width: 0; }
+  .rp-name { font-size: 14px; font-weight: 600; color: var(--text); }
+  .rp-addr { color: var(--text3); font-weight: 400; margin-left: 4px; word-break: break-all; }
+  .rp-to { font-size: 12px; color: var(--text3); margin-top: 2px; }
+  .rp-to .hint { color: var(--brand); cursor: default; }
+  .rp-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+  .rp-date { font-size: 12px; color: var(--text3); white-space: nowrap; }
+  .rp-actions { display: flex; gap: 2px; }
+  .rp-act {
+    width: 32px; height: 32px; border: 0; background: transparent; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center; color: var(--text2); cursor: pointer;
+  }
+  .rp-act:hover { background: var(--hover); }
+  .rp-attachments { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 24px 12px; }
+  .attach {
+    display: flex; align-items: center; gap: 8px;
+    border: 1px solid var(--border); border-radius: 4px; padding: 6px 10px 6px 8px;
+    background: #fff; cursor: pointer; font-size: 13px; max-width: 100%;
+  }
+  .attach:hover { background: var(--hover); }
+  .attach .aicon {
+    width: 28px; height: 28px; border-radius: 3px; display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 10px; font-weight: 700; flex-shrink: 0;
+  }
+  .attach .aname { font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .attach .asize { color: var(--text3); font-size: 12px; }
+  .rp-body {
+    padding: 8px 24px 24px; font-size: 14px; line-height: 20px; color: var(--text);
+    border-top: 1px solid var(--border2); margin-top: 4px; padding-top: 18px;
+  }
+  .rp-body p { margin: 0 0 14px; }
+  .rp-body .sig { color: var(--text2); }
+  .rp-body .lnk { color: #0f6cbd; text-decoration: underline; cursor: pointer; word-break: break-all; }
+  .rp-body .lnk:hover { color: var(--brand-pressed); }
+  .rp-body .promo-hero {
+    background: linear-gradient(135deg, #ff5f6d, #ffc371); color: #fff; text-align: center;
+    padding: 28px 16px; border-radius: 6px; margin-bottom: 14px;
+  }
+  .rp-body .promo-hero h2 { margin: 0 0 6px; font-size: 26px; letter-spacing: .02em; }
+  .rp-body .promo-hero p { margin: 0; font-size: 15px; }
+  .rp-body .cta {
+    display: inline-block; padding: 10px 22px; border-radius: 4px; color: #fff; font-weight: 700;
+    text-decoration: none; cursor: pointer; margin: 4px 0 14px;
+  }
+  .rp-body .fine { font-size: 11px; color: var(--text4); line-height: 15px; }
+  .rp-body .crypto-hero { background: #0b1e3a; color: #f4d35e; text-align: center; padding: 24px; border-radius: 6px; margin-bottom: 14px; }
+  .rp-body .crypto-hero h2 { margin: 0 0 4px; font-size: 24px; }
+  .rp-body .crypto-hero p { margin: 0; color: #cfe0ff; }
+  .rp-body .aws-box { border: 1px solid var(--border); border-radius: 4px; padding: 12px 16px; margin: 0 0 14px; background: var(--bg2); }
+  .rp-body .aws-box .row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 13px; }
+  .rp-body .aws-box .row .k { color: var(--text3); }
+  .rp-body .brand-hdr { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .rp-body .brand-logo {
+    width: 34px; height: 34px; border-radius: 4px; color: #fff; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 18px;
+  }
+  .rp-body .caution-bar {
+    background: var(--amber-bg); border: 1px solid var(--amber-border); color: #323130;
+    padding: 6px 10px; border-radius: 4px; font-size: 12px; margin-bottom: 14px;
+  }
+
+  /* Training card */
+  .train {
+    margin: 0 24px 28px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg2);
+    padding: 14px 16px;
+  }
+  .train-title { font-size: 13px; font-weight: 600; color: var(--text2); display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .train-title .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--brand); }
+  .train-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tbtn {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 32px; padding: 0 14px; border-radius: 4px; font-size: 14px; font-weight: 600; cursor: pointer;
+    border: 1px solid #d1d1d1; background: #fff; color: var(--text);
+  }
+  .tbtn:hover { background: var(--hover); }
+  .tbtn:disabled { cursor: default; opacity: .55; }
+  .tbtn.phish { border-color: #e37d80; color: var(--red); }
+  .tbtn.phish:hover:not(:disabled) { background: var(--red-bg); }
+  .tbtn.spam { border-color: #d9a540; color: var(--amber); }
+  .tbtn.spam:hover:not(:disabled) { background: var(--amber-bg); }
+  .tbtn.safe { border-color: #6bb700; color: var(--green); }
+  .tbtn.safe:hover:not(:disabled) { background: var(--green-bg); }
+  .tbtn.chosen { outline: 2px solid var(--brand); outline-offset: 1px; opacity: 1; }
+  .result { margin-top: 12px; border-radius: 4px; padding: 12px 14px; font-size: 13px; line-height: 19px; }
+  .result.ok { background: var(--green-bg); border: 1px solid #9fd89f; }
+  .result.bad { background: var(--red-bg); border: 1px solid #f1a7ad; }
+  .result .r-head { font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .result.ok .r-head { color: var(--green); }
+  .result.bad .r-head { color: var(--red); }
+  .result .r-type { font-weight: 600; margin-bottom: 6px; }
+  .result ul { margin: 6px 0 0; padding-left: 20px; }
+  .result li { margin: 2px 0; }
+  .result .tip { margin-top: 8px; font-style: italic; color: var(--text2); }
+
+  /* Toast */
+  .toast {
+    position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(20px);
+    background: #292929; color: #fff; padding: 10px 16px; border-radius: 4px; font-size: 13px;
+    opacity: 0; pointer-events: none; transition: opacity .15s, transform .15s; z-index: 50;
+    box-shadow: 0 4px 16px rgba(0,0,0,.25); max-width: 90vw;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Completion */
+  .done-summary {
+    margin: 0 24px 24px; padding: 14px 16px; border-radius: 6px;
+    background: var(--brand-tint); border: 1px solid #b4d6fa; font-size: 14px;
+  }
+  .done-summary strong { color: var(--brand); }
+
+  @media (max-width: 1200px) {
+    .folders { display: none; }
+    .list { width: 360px; }
+    .search-wrap { max-width: 32vw; margin-left: 60px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== Outlook frame ===== -->
+<div class="owa">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="waffle" type="button" data-disabled title="App launcher">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><circle cx="4" cy="4" r="1.8"/><circle cx="10" cy="4" r="1.8"/><circle cx="16" cy="4" r="1.8"/><circle cx="4" cy="10" r="1.8"/><circle cx="10" cy="10" r="1.8"/><circle cx="16" cy="10" r="1.8"/><circle cx="4" cy="16" r="1.8"/><circle cx="10" cy="16" r="1.8"/><circle cx="16" cy="16" r="1.8"/></svg>
+      </button>
+      <div class="app-title">Outlook</div>
+    </div>
+    <div class="search-wrap">
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="8.5" cy="8.5" r="5.5"/><path d="m13 13 4.5 4.5"/></svg>
+        <input type="text" placeholder="Search" aria-label="Search (disabled in simulation)" autocomplete="off">
+        <span class="search-filter" title="Filters"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 5h14M6 10h8M8.5 15h3"/></svg></span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="top-icon" type="button" data-disabled title="Microsoft Teams">
+        <img class="teams-logo" src="data:image/png;base64,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" width="22" height="23" alt="" draggable="false">
+      </button>
+      <button class="top-icon" type="button" data-disabled title="My Day">
+        <img class="teams-logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAMS2lDQ1BJQ0MgUHJvZmlsZQAAeJyVVwdYU8kWnltSIQQIREBK6E0QkRJASggtgPQiiEpIAoQSY0JQsaOLCq5dRLCiqyCKHRCxYV9ZFLtrWSyoKOtiwa68CQF02Ve+d75v7v3vP2f+OefcuWUAoLfzpdIcVBOAXEmeLCbYnzUuKZlFeg4QwATagApM+QK5lBMVFQ6gDZz/bu9uQG9oVx2UWv/s/6+mJRTJBQAgURCnCeWCXIgPAoA3CaSyPACIUsibT82TKvFqiHVkMECIq5Q4Q4WblDhNhS/3+cTFcCF+DABZnc+XZQCg0Q15Vr4gA+rQYbbASSIUSyD2g9gnN3eyEOK5ENtAHzgnXanPTvtBJ+NvmmmDmnx+xiBW5dJn5ACxXJrDn/5/luN/W26OYmAOa9jUM2UhMcqcYd0eZ08OU2J1iD9I0iIiIdYGAMXFwj5/JWZmKkLiVf6ojUDOhTWDdxqgY+Q5sbx+PkbIDwiD2BDidElORHi/T2G6OEjpA+uHlonzeHEQ60FcJZIHxvb7nJBNjhmY90a6jMvp55/xZX0xKPW/KbLjOSp9TDtTxOvXxxwLMuMSIaZCHJAvToiAWAPiCHl2bFi/T0pBJjdiwEemiFHmYgGxTCQJ9lfpY6XpsqCYfv+dufKB3LETmWJeRD++kpcZF6KqFfZYwO+LH+aCdYsknPgBHZF8XPhALkJRQKAqd5wsksTHqnhcT5rnH6Mai9tJc6L6/XF/UU6wkjeDOE6eHzswNj8PLk6VPl4kzYuKU8WJl2fxQ6NU8eB7QTjgggDAAgrY0sBkkAXErV31XfBK1RME+EAGMoAIOPQzAyMS+3ok8BgLCsCfEImAfHCcf1+vCORD/usQVsmJBznV0QGk9/cpVbLBE4hzQRjIgdeKPiXJYAQJ4DFkxP+IiA+bAOaQA5uy/9/zA+x3hgOZ8H5GMTAjiz7gSQwkBhBDiEFEW9wA98G98HB49IPNGWfjHgN5fPcnPCG0ER4SrhPaCbcniQtlQ6IcC9qhflB/fdJ+rA9uBTVdcX/cG6pDZZyJGwAH3AXOw8F94cyukOX2x62sCmuI9t8y+OEO9ftRnCgoZRjFj2IzdKSGnYbroIqy1j/WRxVr2mC9uYM9Q+fn/lB9ITyHDfXEFmEHsHPYSewC1oTVAxZ2HGvAWrCjSjy44h73rbiB2WL64smGOkPXzPc7q6yk3KnGqdPpi6ovTzQtT/kwcidLp8vEGZl5LA78YohYPInAcQTL2cnZDQDl90f1ensT3fddQZgt37n5fwDgfby3t/fIdy70OAD73OEr4fB3zoYNPy1qAJw/LFDI8lUcrjwQ4JuDDp8+fWAMzIENzMcZuAEv4AcCQSiIBHEgCUyE0WfCdS4DU8FMMA8UgRKwHKwB5WAT2AqqwG6wH9SDJnASnAUXwWVwHdyBq6cDvADd4B34jCAICaEhDEQfMUEsEXvEGWEjPkggEo7EIElIKpKBSBAFMhOZj5QgK5FyZAtSjexDDiMnkQtIG3IbeYB0Iq+RTyiGqqM6qBFqhY5E2SgHDUPj0AloBjoFLUAXoEvRMrQS3YXWoSfRi+h1tB19gfZgAFPDmJgp5oCxMS4WiSVj6ZgMm40VY6VYJVaLNcL7fBVrx7qwjzgRZ+As3AGu4BA8HhfgU/DZ+BK8HK/C6/DT+FX8Ad6NfyPQCIYEe4IngUcYR8ggTCUUEUoJ2wmHCGfgs9RBeEckEplEa6I7fBaTiFnEGcQlxA3EPcQTxDbiI2IPiUTSJ9mTvEmRJD4pj1REWkfaRTpOukLqIH0gq5FNyM7kIHIyWUIuJJeSd5KPka+Qn5I/UzQplhRPSiRFSJlOWUbZRmmkXKJ0UD5TtajWVG9qHDWLOo9aRq2lnqHepb5RU1MzU/NQi1YTq81VK1Pbq3Ze7YHaR3VtdTt1rnqKukJ9qfoO9RPqt9Xf0Gg0K5ofLZmWR1tKq6adot2nfdBgaDhq8DSEGnM0KjTqNK5ovKRT6JZ0Dn0ivYBeSj9Av0Tv0qRoWmlyNfmaszUrNA9r3tTs0WJojdKK1MrVWqK1U+uC1jNtkraVdqC2UHuB9lbtU9qPGBjDnMFlCBjzGdsYZxgdOkQdax2eTpZOic5unVadbl1tXRfdBN1puhW6R3XbmRjTislj5jCXMfczbzA/DTMaxhkmGrZ4WO2wK8Pe6w3X89MT6RXr7dG7rvdJn6UfqJ+tv0K/Xv+eAW5gZxBtMNVgo8EZg67hOsO9hguGFw/fP/x3Q9TQzjDGcIbhVsMWwx4jY6NgI6nROqNTRl3GTGM/4yzj1cbHjDtNGCY+JmKT1SbHTZ6zdFkcVg6rjHWa1W1qaBpiqjDdYtpq+tnM2izerNBsj9k9c6o52zzdfLV5s3m3hYnFWIuZFjUWv1tSLNmWmZZrLc9Zvreytkq0WmhVb/XMWs+aZ11gXWN914Zm42szxabS5pot0ZZtm227wfayHWrnapdpV2F3yR61d7MX22+wbxtBGOExQjKicsRNB3UHjkO+Q43DA0emY7hjoWO948uRFiOTR64YeW7kNydXpxynbU53RmmPCh1VOKpx1GtnO2eBc4XztdG00UGj54xuGP3Kxd5F5LLR5ZYrw3Ws60LXZtevbu5uMrdat053C/dU9/XuN9k67Cj2EvZ5D4KHv8ccjyaPj55unnme+z3/8nLwyvba6fVsjPUY0ZhtYx55m3nzvbd4t/uwfFJ9Nvu0+5r68n0rfR/6mfsJ/bb7PeXYcrI4uzgv/Z38Zf6H/N9zPbmzuCcCsIDggOKA1kDtwPjA8sD7QWZBGUE1Qd3BrsEzgk+EEELCQlaE3OQZ8QS8al53qHvorNDTYephsWHlYQ/D7cJl4Y1j0bGhY1eNvRthGSGJqI8EkbzIVZH3oqyjpkQdiSZGR0VXRD+JGRUzM+ZcLCN2UuzO2Hdx/nHL4u7E28Qr4psT6AkpCdUJ7xMDElcmto8bOW7WuItJBknipIZkUnJC8vbknvGB49eM70hxTSlKuTHBesK0CRcmGkzMmXh0En0Sf9KBVEJqYurO1C/8SH4lvyeNl7Y+rVvAFawVvBD6CVcLO0XeopWip+ne6SvTn2V4Z6zK6Mz0zSzN7BJzxeXiV1khWZuy3mdHZu/I7s1JzNmTS85NzT0s0ZZkS05PNp48bXKb1F5aJG2f4jllzZRuWZhsuxyRT5A35OnAH/0WhY3iJ8WDfJ/8ivwPUxOmHpimNU0yrWW63fTF058WBBX8MgOfIZjRPNN05ryZD2ZxZm2ZjcxOm908x3zOgjkdc4PnVs2jzsue91uhU+HKwrfzE+c3LjBaMHfBo5+Cf6op0iiSFd1c6LVw0yJ8kXhR6+LRi9ct/lYsLP61xKmktOTLEsGSX38e9XPZz71L05e2LnNbtnE5cblk+Y0VviuqVmqtLFj5aNXYVXWrWauLV79dM2nNhVKX0k1rqWsVa9vLwssa1lmsW77uS3lm+fUK/4o96w3XL17/foNww5WNfhtrNxltKtn0abN4860twVvqKq0qS7cSt+ZvfbItYdu5X9i/VG832F6y/esOyY72qpiq09Xu1dU7DXcuq0FrFDWdu1J2Xd4dsLuh1qF2yx7mnpK9YK9i7/N9qftu7A/b33yAfaD2oOXB9YcYh4rrkLrpdd31mfXtDUkNbYdDDzc3ejUeOuJ4ZEeTaVPFUd2jy45Rjy041nu84HjPCemJrpMZJx81T2q+c2rcqWuno0+3ngk7c/5s0NlT5zjnjp/3Pt90wfPC4V/Zv9ZfdLtY1+Lacug3198Otbq11l1yv9Rw2eNyY9uYtmNXfK+cvBpw9ew13rWL1yOut92Iv3HrZsrN9lvCW89u59x+9Xv+75/vzL1LuFt8T/Ne6X3D+5V/2P6xp92t/eiDgActD2Mf3nkkePTisfzxl44FT2hPSp+aPK1+5vysqTOo8/Lz8c87XkhffO4q+lPrz/UvbV4e/Mvvr5bucd0dr2Svel8veaP/Zsdbl7fNPVE999/lvvv8vviD/oeqj+yP5z4lfnr6eeoX0peyr7ZfG7+Ffbvbm9vbK+XL+H2/AhhQbm3SAXi9AwBaEgAMuG+kjlftD/sMUe1p+xD4T1i1h+wz+OdSC//po7vg381NAPZuA8AK6tNTAIiiARDnAdDRowfbwF6ub9+pNCLcG2yO/ZqWmwb+jan2pD/EPfQMlKouYOj5X/A5gw3iwn3lAAABD0lEQVR42u2YWw6EIAxFW+NWZP/rgcV0fmYSQ1paoDzG2IQPDMrx9kJRJCLYMQ7YNP4OLAIADWxqnMy1GaYjAMAaxXKo9H2AV8uzIgZmq/LewYFqqXNIHsOBaUyWQZJiOMFjxXlOg9zvPmZRbFYq35L0CLDU4rHRgbsqFrWCvgKMAODK+nE1mKTQlcPNLEkk+Iwt6scipVBbncdiqJj5bRpYDRR6gpWWfTNU7wZLhXN8F1QPGFVcr4bSPt9qyksylB4zVOvHyH0C9PKUplgypCswY1yhOLDAeObeouEFuqEkj5Vu/tW0IPjKBYrzWMs+xk3eBeWxwQYmrd1QHoppNQ9Xn/k5z3UdnfD91fkUsA9bTXaNE0qN9gAAAABJRU5ErkJggg==" width="22" height="22" alt="" draggable="false">
+      </button>
+      <button class="top-icon" type="button" data-disabled title="Notifications">
+        <svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 14V9a5 5 0 0 1 10 0v5l1.5 2h-13L5 14z"/><path d="M8.2 17.5a1.9 1.9 0 0 0 3.6 0"/></svg>
+      </button>
+      <button class="top-icon" type="button" data-disabled title="Settings">
+        <svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="2.6"/><path d="M8.6 2.8h2.8l.4 2 1.6.9 1.9-.8 1.4 2.4-1.5 1.4v1.8l1.5 1.4-1.4 2.4-1.9-.8-1.6.9-.4 2H8.6l-.4-2-1.6-.9-1.9.8-1.4-2.4 1.5-1.4V8.7L3.3 7.3l1.4-2.4 1.9.8 1.6-.9z"/></svg>
+      </button>
+      <div class="me-wrap">
+        <div class="me-avatar" title="Sanjay Tarakanambi — sanjay.tarakanambi@graco.com" aria-label="Account: Sanjay Tarakanambi, sanjay.tarakanambi@graco.com">ST</div>
+        <div class="me-card" role="tooltip">
+          <div class="me-card-avatar">ST</div>
+          <div>
+            <div class="me-card-name">Sanjay Tarakanambi</div>
+            <div class="me-card-mail">sanjay.tarakanambi@graco.com</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- App rail + content -->
+  <div class="shell">
+
+    <!-- App bar -->
+    <nav class="appbar" aria-label="Apps">
+      <button class="app-btn active" type="button" title="Mail">
+        <svg width="26" height="26" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="3" fill="#1b6fd6"/><rect x="2" y="4" width="20" height="16" rx="3" fill="url(#mailg)"/><path d="M6 9h12v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1z" fill="#fff"/><path d="M6 9l6 4.5L18 9" fill="none" stroke="#1b6fd6" stroke-width="1.2"/><defs><linearGradient id="mailg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#3a8ff0"/><stop offset="1" stop-color="#0f5ac1"/></linearGradient></defs></svg>
+      </button>
+      <button class="app-btn" type="button" data-disabled title="Calendar">
+        <svg width="26" height="26" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="3" fill="#2a7de1"/><rect x="3" y="4" width="18" height="5" rx="3" fill="#1359b8"/><rect x="6" y="11" width="3" height="3" fill="#fff"/><rect x="10.5" y="11" width="3" height="3" fill="#fff"/><rect x="15" y="11" width="3" height="3" fill="#fff"/><rect x="6" y="15.5" width="3" height="3" fill="#fff"/><rect x="10.5" y="15.5" width="3" height="3" fill="#fff"/></svg>
+      </button>
+      <button class="app-btn" type="button" data-disabled title="Copilot">
+        <img class="copilot-logo" src="data:image/png;base64,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" width="24" height="24" alt="" draggable="false">
+      </button>
+      <button class="app-btn" type="button" data-disabled title="People">
+        <svg width="26" height="26" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5" fill="#3a8ff0"/><circle cx="16.5" cy="9" r="2.8" fill="#8cc0f7"/><path d="M2.5 19c.5-3.6 3-5.5 6.5-5.5s6 1.9 6.5 5.5z" fill="#3a8ff0"/><path d="M14.5 18.5h7c-.3-2.8-2-4.3-4.5-4.3-.7 0-1.3.1-1.8.3.6.9 1 2 1.2 3.3" fill="#8cc0f7"/></svg>
+      </button>
+      <button class="app-btn" type="button" data-disabled title="To Do">
+        <svg width="26" height="26" viewBox="0 0 24 24"><path d="M4 12.5 9 17.5 20 6.5" fill="none" stroke="#2f7fe6" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 12.5 9 17.5" fill="none" stroke="#1359b8" stroke-width="3.4" stroke-linecap="round"/></svg>
+      </button>
+      <button class="app-btn" type="button" data-disabled title="Word">
+        <svg width="26" height="26" viewBox="0 0 24 24"><rect x="7" y="3" width="14" height="18" rx="2" fill="#41a5ee"/><rect x="7" y="3" width="14" height="18" rx="2" fill="#2b7cd3" opacity=".6"/><rect x="2" y="7" width="12" height="10" rx="1.5" fill="#185abd"/><path d="m4.5 9.5 1.2 5h1l1.2-3.6 1.2 3.6h1l1.2-5h-1l-.7 3.4L8.5 9.5h-.8l-1.1 3.4-.7-3.4z" fill="#fff"/></svg>
+      </button>
+      <button class="app-btn" type="button" data-disabled title="Viva Engage">
+        <svg width="26" height="26" viewBox="0 0 24 24"><circle cx="12" cy="7" r="3" fill="#2f7fe6"/><circle cx="6" cy="16" r="3" fill="#2f7fe6"/><circle cx="18" cy="16" r="3" fill="#2f7fe6"/><path d="M12 10v3M12 13l-4 2M12 13l4 2" stroke="#2f7fe6" stroke-width="1.6" fill="none"/></svg>
+      </button>
+      <button class="app-btn" type="button" data-disabled title="OneDrive">
+        <svg width="26" height="26" viewBox="0 0 24 24"><path d="M7.5 18h10a3.5 3.5 0 0 0 .6-6.9A5.5 5.5 0 0 0 7.6 9.5 4.3 4.3 0 0 0 7.5 18z" fill="#1490df"/><path d="M7.6 9.5A5.5 5.5 0 0 1 17 10.4l1.1.7A3.5 3.5 0 0 1 17.5 18H9z" fill="#0f78d4" opacity=".8"/></svg>
+      </button>
+      <button class="app-btn" type="button" data-disabled title="More apps">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#424242" stroke-width="1.5" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><rect x="7" y="7" width="4" height="4" rx="1"/><rect x="13" y="7" width="4" height="4" rx="1"/><rect x="7" y="13" width="4" height="4" rx="1"/><rect x="13" y="13" width="4" height="4" rx="1"/></svg>
+      </button>
+    </nav>
+
+    <div class="content">
+
+  <!-- Ribbon -->
+  <div class="ribbon">
+    <div class="ribbon-tabs">
+      <button class="hamburger" type="button" data-disabled title="Toggle folder pane">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 5h14M3 10h14M3 15h14"/></svg>
+      </button>
+      <button class="ribbon-tab" type="button" data-disabled>File</button>
+      <button class="ribbon-tab active" type="button">Home</button>
+      <button class="ribbon-tab" type="button" data-disabled>View</button>
+      <button class="ribbon-tab" type="button" data-disabled>Help</button>
+      <div class="ribbon-tools">
+        <div class="score-chip" title="Correct answers out of 8 messages">
+          <span>Score:</span>
+          <span class="score-num"><span id="scoreCorrect">0</span> / 8</span>
+          <span class="score-sub">(<span id="scoreAnswered">0</span> answered)</span>
+        </div>
+        <button class="reset-btn" id="resetBtn" type="button">Reset exercise</button>
+      </div>
+    </div>
+    <div class="cmd-row">
+    <div class="cmdbar">
+      <div class="newmail" data-disabled role="button" tabindex="0" title="New mail">
+        <span class="nm-main">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 16.5h13M3.5 11.5l8-8 3 3-8 8h-3z"/></svg>
+          New mail
+        </span>
+        <span class="nm-chev"><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 5 5 5-5"/></svg></span>
+      </div>
+      <button class="cmd" type="button" data-disabled title="Delete">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h12M8 5.5V4h4v1.5M5.5 5.5l.8 10.5h7.4l.8-10.5M8.5 8.5v5M11.5 8.5v5"/></svg><svg class="chev" width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 5 5 5-5"/></svg>
+      </button>
+      <button class="cmd" type="button" data-disabled title="Archive">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="3.5" rx=".8"/><path d="M4 7.5v8h12v-8M8 11h4"/></svg>
+      </button>
+      <button class="cmd" type="button" data-disabled title="Report">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="#c50f1f" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2.5 3.5 5v5c0 3.5 2.8 6.4 6.5 7.5 3.7-1.1 6.5-4 6.5-7.5V5L10 2.5z"/><path d="M10 7v3.5"/><circle cx="10" cy="13" r=".6" fill="#c50f1f"/></svg><svg class="chev" width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 5 5 5-5"/></svg>
+      </button>
+      <span class="cmd-sep"></span>
+      <button class="cmd" type="button" data-disabled title="Sweep">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15.5 3.5-6 6M4 17c0-3 1.5-5.5 4.5-7l2 2C9 15 6.5 17 4 17z"/></svg>
+      </button>
+      <button class="cmd" type="button" data-disabled title="Move to">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5a1.5 1.5 0 0 1 1.5-1.5H8l1.5 1.5h6A1.5 1.5 0 0 1 17 8v6.5a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 14.5v-8z"/><path d="M8 11h5M11 9l2 2-2 2"/></svg><svg class="chev" width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 5 5 5-5"/></svg>
+      </button>
+      <span class="cmd-sep"></span>
+      <button class="cmd muted" type="button" data-disabled title="Reply">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m8 5-5 4.5L8 14"/><path d="M3.5 9.5H12a5 5 0 0 1 5 5v1"/></svg>
+      </button>
+      <button class="cmd muted" type="button" data-disabled title="Reply all">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m7 5-5 4.5L7 14M11 5 6 9.5l5 4.5"/><path d="M6.5 9.5H12a5 5 0 0 1 5 5v1"/></svg>
+      </button>
+      <button class="cmd muted" type="button" data-disabled title="Forward">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 5 5 4.5-5 4.5"/><path d="M16.5 9.5H8a5 5 0 0 0-5 5v1"/></svg><svg class="chev" width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 5 5 5-5"/></svg>
+      </button>
+      <span class="cmd-sep"></span>
+      <button class="cmd" type="button" data-disabled title="Teams">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="#5b5fc7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="10" height="9" rx="1.5"/><path d="m12.5 9 5-2.5v8l-5-2.5"/></svg>
+      </button>
+      <span class="cmd-sep"></span>
+      <button class="cmd outlined" type="button" data-disabled>
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m11 2.5-6 9h5l-1 6 6-9h-5z"/></svg>Quick steps
+      </button>
+      <button class="cmd outlined-chev" type="button" data-disabled title="Quick steps options">
+        <svg class="chev" width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 5 5 5-5"/></svg>
+      </button>
+      <span class="cmd-sep"></span>
+      <button class="cmd" type="button" data-disabled>
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5 10 4l7 4.5v7a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="m3 8.5 7 4.5 7-4.5"/></svg>Mark all as read
+      </button>
+      <button class="cmd muted" type="button" data-disabled title="Categorize">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h6l8 8-5 5-8-8V4z"/><circle cx="6.5" cy="7.5" r="1"/></svg><svg class="chev" width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 5 5 5-5"/></svg>
+      </button>
+      <button class="cmd muted" type="button" data-disabled title="Flag">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17V3.5h10l-2.5 4 2.5 4H5"/></svg><svg class="chev" width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 5 5 5-5"/></svg>
+      </button>
+      <button class="cmd muted" type="button" data-disabled title="Snooze">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l3 2"/></svg><svg class="chev" width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 5 5 5-5"/></svg>
+      </button>
+      <button class="cmd muted" type="button" data-disabled title="Rules">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="14" height="11" rx="1.5"/><path d="m3.5 6 6.5 4.5L16.5 6"/><circle cx="15" cy="15" r="2.5" fill="#fff"/></svg><svg class="chev" width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 5 5 5-5"/></svg>
+      </button>
+      <span class="cmd-sep"></span>
+      <button class="cmd muted" type="button" data-disabled title="Print">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7V3.5h8V7M4 7h12a1 1 0 0 1 1 1v5h-3v3H6v-3H3V8a1 1 0 0 1 1-1z"/></svg>
+      </button>
+      <button class="cmd muted" type="button" data-disabled title="Immersive reader">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="3" y="3" width="14" height="14" rx="2"/><rect x="6" y="6" width="3" height="3"/><rect x="11" y="6" width="3" height="3"/><rect x="6" y="11" width="3" height="3"/><rect x="11" y="11" width="3" height="3"/></svg>
+      </button>
+      <button class="cmd muted" type="button" data-disabled title="Undo">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6-3 3 3 3"/><path d="M3.5 9h8a4 4 0 0 1 0 8H8"/></svg>
+      </button>
+      <span class="cmd-sep"></span>
+      <button class="cmd" type="button" data-disabled title="More options">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="#424242"><circle cx="5" cy="10" r="1.6"/><circle cx="10" cy="10" r="1.6"/><circle cx="15" cy="10" r="1.6"/></svg>
+      </button>
+      <span class="cmd-spacer"></span>
+      <button class="cmd" type="button" data-disabled title="Customize toolbar">
+        <svg class="chev" width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 5 5 5-5"/></svg>
+      </button>
+    </div>
+    <button class="copilot-pill" type="button" data-disabled title="Copilot">
+      <img class="copilot-logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAuCAYAAABqK0pRAAAMS2lDQ1BJQ0MgUHJvZmlsZQAAeJyVVwdYU8kWnltSIQQIREBK6E0QkRJASggtgPQiiEpIAoQSY0JQsaOLCq5dRLCiqyCKHRCxYV9ZFLtrWSyoKOtiwa68CQF02Ve+d75v7v3vP2f+OefcuWUAoLfzpdIcVBOAXEmeLCbYnzUuKZlFeg4QwATagApM+QK5lBMVFQ6gDZz/bu9uQG9oVx2UWv/s/6+mJRTJBQAgURCnCeWCXIgPAoA3CaSyPACIUsibT82TKvFqiHVkMECIq5Q4Q4WblDhNhS/3+cTFcCF+DABZnc+XZQCg0Q15Vr4gA+rQYbbASSIUSyD2g9gnN3eyEOK5ENtAHzgnXanPTvtBJ+NvmmmDmnx+xiBW5dJn5ACxXJrDn/5/luN/W26OYmAOa9jUM2UhMcqcYd0eZ08OU2J1iD9I0iIiIdYGAMXFwj5/JWZmKkLiVf6ojUDOhTWDdxqgY+Q5sbx+PkbIDwiD2BDidElORHi/T2G6OEjpA+uHlonzeHEQ60FcJZIHxvb7nJBNjhmY90a6jMvp55/xZX0xKPW/KbLjOSp9TDtTxOvXxxwLMuMSIaZCHJAvToiAWAPiCHl2bFi/T0pBJjdiwEemiFHmYgGxTCQJ9lfpY6XpsqCYfv+dufKB3LETmWJeRD++kpcZF6KqFfZYwO+LH+aCdYsknPgBHZF8XPhALkJRQKAqd5wsksTHqnhcT5rnH6Mai9tJc6L6/XF/UU6wkjeDOE6eHzswNj8PLk6VPl4kzYuKU8WJl2fxQ6NU8eB7QTjgggDAAgrY0sBkkAXErV31XfBK1RME+EAGMoAIOPQzAyMS+3ok8BgLCsCfEImAfHCcf1+vCORD/usQVsmJBznV0QGk9/cpVbLBE4hzQRjIgdeKPiXJYAQJ4DFkxP+IiA+bAOaQA5uy/9/zA+x3hgOZ8H5GMTAjiz7gSQwkBhBDiEFEW9wA98G98HB49IPNGWfjHgN5fPcnPCG0ER4SrhPaCbcniQtlQ6IcC9qhflB/fdJ+rA9uBTVdcX/cG6pDZZyJGwAH3AXOw8F94cyukOX2x62sCmuI9t8y+OEO9ftRnCgoZRjFj2IzdKSGnYbroIqy1j/WRxVr2mC9uYM9Q+fn/lB9ITyHDfXEFmEHsHPYSewC1oTVAxZ2HGvAWrCjSjy44h73rbiB2WL64smGOkPXzPc7q6yk3KnGqdPpi6ovTzQtT/kwcidLp8vEGZl5LA78YohYPInAcQTL2cnZDQDl90f1ensT3fddQZgt37n5fwDgfby3t/fIdy70OAD73OEr4fB3zoYNPy1qAJw/LFDI8lUcrjwQ4JuDDp8+fWAMzIENzMcZuAEv4AcCQSiIBHEgCUyE0WfCdS4DU8FMMA8UgRKwHKwB5WAT2AqqwG6wH9SDJnASnAUXwWVwHdyBq6cDvADd4B34jCAICaEhDEQfMUEsEXvEGWEjPkggEo7EIElIKpKBSBAFMhOZj5QgK5FyZAtSjexDDiMnkQtIG3IbeYB0Iq+RTyiGqqM6qBFqhY5E2SgHDUPj0AloBjoFLUAXoEvRMrQS3YXWoSfRi+h1tB19gfZgAFPDmJgp5oCxMS4WiSVj6ZgMm40VY6VYJVaLNcL7fBVrx7qwjzgRZ+As3AGu4BA8HhfgU/DZ+BK8HK/C6/DT+FX8Ad6NfyPQCIYEe4IngUcYR8ggTCUUEUoJ2wmHCGfgs9RBeEckEplEa6I7fBaTiFnEGcQlxA3EPcQTxDbiI2IPiUTSJ9mTvEmRJD4pj1REWkfaRTpOukLqIH0gq5FNyM7kIHIyWUIuJJeSd5KPka+Qn5I/UzQplhRPSiRFSJlOWUbZRmmkXKJ0UD5TtajWVG9qHDWLOo9aRq2lnqHepb5RU1MzU/NQi1YTq81VK1Pbq3Ze7YHaR3VtdTt1rnqKukJ9qfoO9RPqt9Xf0Gg0K5ofLZmWR1tKq6adot2nfdBgaDhq8DSEGnM0KjTqNK5ovKRT6JZ0Dn0ivYBeSj9Av0Tv0qRoWmlyNfmaszUrNA9r3tTs0WJojdKK1MrVWqK1U+uC1jNtkraVdqC2UHuB9lbtU9qPGBjDnMFlCBjzGdsYZxgdOkQdax2eTpZOic5unVadbl1tXRfdBN1puhW6R3XbmRjTislj5jCXMfczbzA/DTMaxhkmGrZ4WO2wK8Pe6w3X89MT6RXr7dG7rvdJn6UfqJ+tv0K/Xv+eAW5gZxBtMNVgo8EZg67hOsO9hguGFw/fP/x3Q9TQzjDGcIbhVsMWwx4jY6NgI6nROqNTRl3GTGM/4yzj1cbHjDtNGCY+JmKT1SbHTZ6zdFkcVg6rjHWa1W1qaBpiqjDdYtpq+tnM2izerNBsj9k9c6o52zzdfLV5s3m3hYnFWIuZFjUWv1tSLNmWmZZrLc9Zvreytkq0WmhVb/XMWs+aZ11gXWN914Zm42szxabS5pot0ZZtm227wfayHWrnapdpV2F3yR61d7MX22+wbxtBGOExQjKicsRNB3UHjkO+Q43DA0emY7hjoWO948uRFiOTR64YeW7kNydXpxynbU53RmmPCh1VOKpx1GtnO2eBc4XztdG00UGj54xuGP3Kxd5F5LLR5ZYrw3Ws60LXZtevbu5uMrdat053C/dU9/XuN9k67Cj2EvZ5D4KHv8ccjyaPj55unnme+z3/8nLwyvba6fVsjPUY0ZhtYx55m3nzvbd4t/uwfFJ9Nvu0+5r68n0rfR/6mfsJ/bb7PeXYcrI4uzgv/Z38Zf6H/N9zPbmzuCcCsIDggOKA1kDtwPjA8sD7QWZBGUE1Qd3BrsEzgk+EEELCQlaE3OQZ8QS8al53qHvorNDTYephsWHlYQ/D7cJl4Y1j0bGhY1eNvRthGSGJqI8EkbzIVZH3oqyjpkQdiSZGR0VXRD+JGRUzM+ZcLCN2UuzO2Hdx/nHL4u7E28Qr4psT6AkpCdUJ7xMDElcmto8bOW7WuItJBknipIZkUnJC8vbknvGB49eM70hxTSlKuTHBesK0CRcmGkzMmXh0En0Sf9KBVEJqYurO1C/8SH4lvyeNl7Y+rVvAFawVvBD6CVcLO0XeopWip+ne6SvTn2V4Z6zK6Mz0zSzN7BJzxeXiV1khWZuy3mdHZu/I7s1JzNmTS85NzT0s0ZZkS05PNp48bXKb1F5aJG2f4jllzZRuWZhsuxyRT5A35OnAH/0WhY3iJ8WDfJ/8ivwPUxOmHpimNU0yrWW63fTF058WBBX8MgOfIZjRPNN05ryZD2ZxZm2ZjcxOm908x3zOgjkdc4PnVs2jzsue91uhU+HKwrfzE+c3LjBaMHfBo5+Cf6op0iiSFd1c6LVw0yJ8kXhR6+LRi9ct/lYsLP61xKmktOTLEsGSX38e9XPZz71L05e2LnNbtnE5cblk+Y0VviuqVmqtLFj5aNXYVXWrWauLV79dM2nNhVKX0k1rqWsVa9vLwssa1lmsW77uS3lm+fUK/4o96w3XL17/foNww5WNfhtrNxltKtn0abN4860twVvqKq0qS7cSt+ZvfbItYdu5X9i/VG832F6y/esOyY72qpiq09Xu1dU7DXcuq0FrFDWdu1J2Xd4dsLuh1qF2yx7mnpK9YK9i7/N9qftu7A/b33yAfaD2oOXB9YcYh4rrkLrpdd31mfXtDUkNbYdDDzc3ejUeOuJ4ZEeTaVPFUd2jy45Rjy041nu84HjPCemJrpMZJx81T2q+c2rcqWuno0+3ngk7c/5s0NlT5zjnjp/3Pt90wfPC4V/Zv9ZfdLtY1+Lacug3198Otbq11l1yv9Rw2eNyY9uYtmNXfK+cvBpw9ew13rWL1yOut92Iv3HrZsrN9lvCW89u59x+9Xv+75/vzL1LuFt8T/Ne6X3D+5V/2P6xp92t/eiDgActD2Mf3nkkePTisfzxl44FT2hPSp+aPK1+5vysqTOo8/Lz8c87XkhffO4q+lPrz/UvbV4e/Mvvr5bucd0dr2Svel8veaP/Zsdbl7fNPVE999/lvvv8vviD/oeqj+yP5z4lfnr6eeoX0peyr7ZfG7+Ffbvbm9vbK+XL+H2/AhhQbm3SAXi9AwBaEgAMuG+kjlftD/sMUe1p+xD4T1i1h+wz+OdSC//po7vg381NAPZuA8AK6tNTAIiiARDnAdDRowfbwF6ub9+pNCLcG2yO/ZqWmwb+jan2pD/EPfQMlKouYOj5X/A5gw3iwn3lAAAJHElEQVR42u2aW4xdVRnHf99aa08vc2mnNxp6pWlrW2htoCgEEoiACSHYqDHRSKMx8qTig5KY+KAP+mrigy8mmnBRCTExWo23UIxRLtJSSil02kKnYx1pOx3m0unMOWev9fmw1j5nnzPnDFRmXgg72fPttWafOd9//f//b62194iq8kE4DB+Q4wMDxF3rB34/5HVgzHNyLIACCqqKEq8htbW5HSOMnp3gzKHzjA5OAPDow1v49sM3yPsFIu/VI2+Mev3h89Mx8fiDIlBKtDVxaNx37h/DnHvuv6iCCBgjWCeIEZ7+8V5u27tMFpSRExdz/d6zk7MSVFWkqd2pP14M/nMYEIwB5wzGCdYKxgg/+eUQt+3dvbDS+s4fRusji1CSTcvI05x4437l7aMjiAjWGZyLTFhnIhArvDJwhcOvTei+m/pkQYA8eXhSqzM1QBoj3YRIUEJq0/R7JSDpc8NHLuIyg8sE5wSXRRDOGYwFrOHIyUn23dS3MIw89vxYCUDroU2huFSa779yYYYss7hMyLoM1hmyzER/OAPWINZw5PTVhZHWYy+MafB5U2KF9kXKUZvaQcE0COPqxSlsYsFlSVqZQTITgbgI5OWz0wsD5PEXRmJpK0pc+lFvCyCKiCIoYmI0KEjkRkQZOzVJ1mUbQDKDdFlwFpNFIMYZMIaXz1zVm7culXkD8viLlxXJkXJSHa6LhBsxJODK1EWPsYW540nBQgIkziDOIlb42TPvcPPWpfPHyC8On8O5RmIi1BMst+sx9dPSP3PZ4pyLBneCZBbpspguh2QWk4CYzCLWcGy4xs//Nq5fufva5pS2QI4Pj6tzVxoJSjHCpURTv7QAi9JrAJ4e6cUYMFaQZGqx0RuSfGIyG0Elrzz2whVMZvTLd/TK+wJy4sIlMjfVduTnZqSVQeXqpZXcua+fbxzYCCLs29Wc3MRQhaG/j6tieGewigaDeoMeqvDMoYoSHUf/poz+zRn9mxz9m5y8JyCvXziPs5PRyB0SLzPUiM2eOXd4Bd/80iYeObCx7ci++eeLevpPl/BqCViCGoJYQjAohkCKCiOXauhLscDsvr9bb7y/R94VyOmRQbqydok3V6O66WeZPfY/+tXd7N/VHsSZg//Wgd/9B68OrxZPimoJJWARkNQnYBF48alRVt7gdO2OxdIRyG9ee0kzN5XYaK5QTbHe35mR/btu66jxN59+HYIDzVC1KBkaHEEcPhgCLjKETcNoEhABPEeeGuGB76/vzIg1NbrcVF3j0lJi68kWc4c01uvl9vZVmzsac/yNEe3SKoZAjiI4jCpCQELAqCUQEjOeoFKazeL3OPVze+SPp/5C5sqjT5N5y9KRNOOXAZhk+p2rN3QEMnHyApZaWpM1F4noDIvHNjzCbCAjr88Am9oDOXP5re8uctP1JEExBYA2iTe3Kd2jbFu55VudgEydfBtnckRBVBDVOiNBFKMeq5YghdmLb6FeHY1oZ0bOjQ78YKmZbk5aFNHZiTba7fs3r9j2o85AzuNwJYm6KCssnoCh8EZ7RhoMdgDSJZ4eO9OSeJmBoqpHCc1mIgK/dctnOsrq0m+PaGZyTCqAJs0URgJGA1YDXiyqvlR+ZwNZtWt5ZyAXxo7TIzMgUVLNI94+cSOz7+kSP8fTDo+jGlcLGhCJTIja6A2xGDVRVkX5ldnSWr2rtzOQ8fFj9NrZiTdMXDBCG2k17t9zw+c6lt3xg8/hjI1smLhSrjOhIYorlV1VaZJWGYiVOapWt9SiudtJK/2Rd+tfubzzvrtyakid1FJ1iuYuV6myNwpZpaLcsplQ+neu6Aykx+QtidJGUu36G+21/Td2BnJmCMkCLldUIxNeY9pWQmKiiKbESMuuSJVlO1d3XqKsW7GT8bHjczBQLn80jVNh/v5lczDy1lmwHhAkKNZ7hOiNKCrTxEZI5aW+QFJBBNZ+eu/cq98longT2ox0JwaYBbhn2Z6O/qgOnsVkBjUCHtQIJoD6QMBjiyVJwYSatDRN35620rZNMWkCsnHTFzn32iuzGVFmA2iRlCD0rT/QkY0rh55VcR4N2vijIW3wRTAaMEFS2ZW6P7Re8KW+v16z/5a5l/FL+/bIuo0P6cT5J95l5FtPYcn6Ayy6/kBbNoaefFxH/3qI6zZuiFXXSFwDBoEAaoFg0BBneQmAmrTEKxV7hcU7Nry3jVXf+gOydNkezSdexU8ew0+8miQlaXwaz1NM7x5AyNY9hOn9aBOI2qnjmntl+FdPMPyvo2y781bwHvWtjIR6lJB8EAQ0pAeBEhWRgCzZcf37e/YLUB04qLWBg2gtoBWPznioBHQmRyshtmc8WvH4mcDklGdyKuC7ulm/dzvqDQRBvUQGvMR2SFFLbYgAE4Di+fGaRx5i0bbZe5xreq3Q9ZEHpftTPxWzfBuaB9Qr6kPUfXFqjCEoIcTmkhXdiAuI8+B8I2YestROUTKPZHnj2uVQ+n07EP/XawWARTfuJx88geQapeIpAYmjF0Kjq3tNN5IFMIIEgxpNK5QoI7WFnCT5JHmjJC0Qeu+9e/7ejwDYtTvErtqutcETUAtoHmL0Comp3Ct5Hsi90r12MXjf9BhSgyJJWtRBxGW9pnYBqNi29N57l8wrkGgYhWqAXKEWwCviFQ3gvVLLldzDih2rMFlAjUEsaAjgG0xQsFIwUXilBEJV6Lnrnvl9Y1WX18c/S3XgGPgIRGuRFWqBSlWp1iKYJWsXIy6AUdRHacXCJ+BLckqlOCbfAFDspHvu+oQsCBC3cZdQDVoAkVzRXKnUIohqDao16F2/GPXJEwYIITEBarVRpZK0qJffCASg5/ZPzv87xKYPr9tJ7fRxyKPEKpXAdEWZrgRmqsrKvcsTG6DeIGkSFN9gIc4bqdS2SEtSXHr7fbKgQJbc83lqJ44RcqVSjed0RZmpxOt1dyyHoKgHtSFJKzJR90Vox4TWPdL34NcX/vW027pbsvu+wNRVz9S0Z2o6MD0TWVl9y/KYkFFwIc4jWTrL102nL52Bvv1fw12/Veb1re5cx6VfP6njrx7j8tFX6FqziOs+1s+yDYvb31wwUGKiEQW3ejtuzTYW7X5AFuT19If/+fAhkGs7/gf3kIxBsaU/RgAAAABJRU5ErkJggg==" width="26" height="26" alt="" draggable="false">
+    </button>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+
+
+    <!-- Folder pane -->
+    <aside class="folders" aria-label="Folders">
+      <div class="folder-section">
+        <div class="folder-header" data-disabled>
+          <svg class="chev" width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 5 5 5-5"/></svg>
+          Favorites
+        </div>
+        <div class="folder" data-disabled>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M3 5.5A1.5 1.5 0 0 1 4.5 4H15.5A1.5 1.5 0 0 1 17 5.5V11H13l-1 2H8l-1-2H3z"/><path d="M3 11v3.5A1.5 1.5 0 0 0 4.5 16h11a1.5 1.5 0 0 0 1.5-1.5V11"/></svg>
+          <span class="fname">Inbox</span><span class="fcount" id="favInboxCount">8</span>
+        </div>
+        <div class="folder" data-disabled>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 17 3.5 13.5 17l-4-4.5L3 10z"/><path d="m9.5 12.5 7.5-9"/></svg>
+          <span class="fname">Sent Items</span>
+        </div>
+        <div class="folder" data-disabled>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 16.5h13M3.5 12.5l8-8 3 3-8 8h-3z"/></svg>
+          <span class="fname">Drafts</span>
+        </div>
+      </div>
+      <div class="folder-section">
+        <div class="folder-header" data-disabled title="sanjay.tarakanambi@graco.com">
+          <svg class="chev" width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 5 5 5-5"/></svg>
+          <span class="acct">sanjay.tarakanambi@graco.com</span>
+        </div>
+        <div class="folder selected" aria-current="true">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M3 5.5A1.5 1.5 0 0 1 4.5 4H15.5A1.5 1.5 0 0 1 17 5.5V11H13l-1 2H8l-1-2H3z"/><path d="M3 11v3.5A1.5 1.5 0 0 0 4.5 16h11a1.5 1.5 0 0 0 1.5-1.5V11"/></svg>
+          <span class="fname">Inbox</span><span class="fcount" id="inboxCount">8</span>
+        </div>
+        <div class="folder" data-disabled>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 16.5h13M3.5 12.5l8-8 3 3-8 8h-3z"/></svg>
+          <span class="fname">Drafts</span>
+        </div>
+        <div class="folder" data-disabled>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 17 3.5 13.5 17l-4-4.5L3 10z"/><path d="m9.5 12.5 7.5-9"/></svg>
+          <span class="fname">Sent Items</span>
+        </div>
+        <div class="folder" data-disabled>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h12M8 5.5V4h4v1.5M5.5 5.5l.8 10.5h7.4l.8-10.5M8.5 8.5v5M11.5 8.5v5"/></svg>
+          <span class="fname">Deleted Items</span><span class="fcount">1</span>
+        </div>
+        <div class="folder" data-disabled>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="14" height="11" rx="1.5"/><path d="m3.5 6 6.5 4.5L16.5 6"/><circle cx="14.5" cy="14" r="3" fill="#fff"/><path d="m12.5 12 4 4"/></svg>
+          <span class="fname">Junk Email</span>
+        </div>
+        <div class="folder" data-disabled>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5h12v8l-4 4H4z"/><path d="M12 16.5v-4h4"/></svg>
+          <span class="fname">Notes</span>
+        </div>
+        <div class="folder" data-disabled>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="14" height="3.5" rx=".8"/><path d="M4 7.5v8h12v-8M8 11h4"/></svg>
+          <span class="fname">Archive</span>
+        </div>
+        <div class="folder" data-disabled>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5a1.5 1.5 0 0 1 1.5-1.5H8l1.5 1.5h6A1.5 1.5 0 0 1 17 8v6.5a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 14.5v-8z"/></svg>
+          <span class="fname">Conversation History</span>
+        </div>
+        <div class="folder" data-disabled>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5a1.5 1.5 0 0 1 1.5-1.5H8l1.5 1.5h6A1.5 1.5 0 0 1 17 8v2"/><path d="M3 6.5v8A1.5 1.5 0 0 0 4.5 16H10"/><circle cx="14" cy="13.5" r="2.5"/><path d="m16 15.5 1.8 1.8"/></svg>
+          <span class="fname">Search Folders</span>
+        </div>
+        <div class="folder groups" data-disabled>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="6.5" r="2.5"/><circle cx="4.5" cy="8.5" r="2"/><circle cx="15.5" cy="8.5" r="2"/><path d="M6 15.5c.4-2.4 1.9-3.5 4-3.5s3.6 1.1 4 3.5zM2 15c.2-1.6 1.1-2.5 2.5-2.5M18 15c-.2-1.6-1.1-2.5-2.5-2.5"/></svg>
+          <span class="fname">Go to Groups</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Message list -->
+    <section class="list" aria-label="Message list">
+      <div class="list-head">
+        <div class="list-tabs">
+          <button class="list-tab active" type="button">Focused</button>
+          <button class="list-tab" type="button" data-disabled>Other</button>
+        </div>
+        <div class="list-icons">
+          <button class="list-ic" type="button" data-disabled title="Select"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="3" y="5" width="11" height="11" rx="1.5"/><path d="M6.5 5V4.5A1.5 1.5 0 0 1 8 3h7.5A1.5 1.5 0 0 1 17 4.5V12a1.5 1.5 0 0 1-1.5 1.5H15"/></svg></button>
+          <button class="list-ic" type="button" data-disabled title="Expand conversations"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v13M5.5 11.5 10 16l4.5-4.5"/></svg></button>
+          <button class="list-ic" type="button" data-disabled title="Filter"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 5h14M6 10h8M8.5 15h3"/></svg></button>
+          <button class="list-ic" type="button" data-disabled title="Sort"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 16V4M3.5 7l3-3 3 3M13.5 4v12M10.5 13l3 3 3-3"/></svg></button>
+        </div>
+      </div>
+      <div class="list-items" id="listItems" role="list"></div>
+    </section>
+
+    <!-- Reading pane -->
+    <section class="reading" aria-label="Reading pane">
+      <div class="reading-scroll" id="readingPane"></div>
+    </section>
+
+  </div>
+
+    </div><!-- /content -->
+  </div><!-- /shell -->
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ------------------------------------------------------------------
+     Message data — all fictional. Links are inert spans; attachments are
+     inert chips. Nothing on this page performs any network request.
+  ------------------------------------------------------------------ */
+  const EMAILS = [
+    {
+      id: 'it-suspend',
+      group: 'Today',
+      fromName: 'IT Support',
+      fromAddr: 'it-support@graco-company-help.com',
+      subject: 'URGENT: Account Suspended — Verify Now',
+      preview: 'We detected unusual activity in your account and suspended access to prevent fraud. To restore access, please verify…',
+      time: '10:42 AM',
+      fullDate: 'Thu 10/9/2025 10:42 AM',
+      color: '#c50f1f',
+      type: 'phishing',
+      body: `
+        <p>Dear Sanjay,</p>
+        <p>We detected unusual activity in your account and suspended access to prevent fraud. To restore access, please verify your identity within <b>24 hours</b> by confirming your username and password at the secure portal below:</p>
+        <p><span class="lnk" data-url="https://VerifyAccountNow.graco-company-help.com">https://VerifyAccountNow.graco-company-help.com</span></p>
+        <p>If you do not verify within 24 hours, your account will be permanently disabled.</p>
+        <p class="sig">Thank you,<br>IT Support Team</p>`,
+      flags: [
+        'Sense of urgency and a threat ("24 hours", "permanently disabled") designed to make you act before thinking.',
+        'Asks you to confirm your username and password — real IT teams never ask for credentials by email.',
+        'Sender domain <b>graco-company-help.com</b> is not the official company domain (<b>graco.com</b>).',
+        'Link is vague and points to a look-alike domain. Never enter credentials from an emailed link.'
+      ],
+      tip: 'Report it with the Report button and contact IT through the official help desk number or portal.'
+    },
+    {
+      id: 'payroll-fix',
+      group: 'Today',
+      fromName: 'Payroll',
+      fromAddr: 'payroll@graco.payroll-payments.com',
+      subject: 'Payroll Adjustment — Action Required',
+      preview: 'An error was found in this month\u2019s payroll for your account. To correct your direct deposit, open the attached…',
+      time: '9:15 AM',
+      fullDate: 'Thu 10/9/2025 9:15 AM',
+      color: '#8764b8',
+      type: 'phishing',
+      attachments: [{ name: 'PayrollFix.zip', size: '212 KB', kind: 'ZIP', color: '#7a7574' }],
+      body: `
+        <p>Hello,</p>
+        <p>An error was found in this month’s payroll for your account. To correct your direct deposit, open the attached <b>“PayrollFix”</b> file and follow the instructions.</p>
+        <p>Failure to respond will delay your payment.</p>
+        <p class="sig">Regards,<br>Payroll Department</p>`,
+      flags: [
+        'Unsolicited attachment (a .zip named "PayrollFix") — attachments like this frequently carry malware.',
+        'Threatens a delayed paycheck to pressure you into opening the file.',
+        'Sender domain <b>graco.payroll-payments.com</b> only <i>looks</i> like graco.com — the real domain is the part right before ".com", which is <b>payroll-payments.com</b>.',
+        'Generic greeting ("Hello") and no reference to any internal system such as Workday.'
+      ],
+      tip: 'Do not open the attachment. Check your pay details directly in Workday and report the message.'
+    },
+    {
+      id: 'hr-enroll',
+      group: 'Today',
+      fromName: 'HR Benefits',
+      fromAddr: 'hrbenefits@graco.com',
+      subject: 'Open Enrollment Reminder — Webinar on Oct 20',
+      preview: 'Hi Sanjay — friendly reminder that open enrollment starts Oct 15. We\u2019re hosting a 30-minute webinar on Oct 20…',
+      time: '8:03 AM',
+      fullDate: 'Thu 10/9/2025 8:03 AM',
+      color: '#0078d4',
+      type: 'safe',
+      body: `
+        <p>Hi Sanjay —</p>
+        <p>Friendly reminder that open enrollment starts <b>Oct 15</b>. We’re hosting a 30-minute webinar on <b>Oct 20 at 10:00 AM</b> to review plan changes for next year.</p>
+        <p><span class="lnk" data-url="https://outlook.office.com/calendar/graco.com/open-enrollment-webinar">Register here</span> (company calendar link) or view details in Workday under <i>Benefits &gt; Open Enrollment</i>.</p>
+        <p>Questions? Reply to this message or stop by HR on the 3rd floor.</p>
+        <p class="sig">Best,<br>HR Benefits Team<br>Graco Inc.</p>`,
+      flags: [
+        'Sender uses the official company domain <b>graco.com</b>.',
+        'References internal systems you can verify on your own (Workday, company calendar).',
+        'No request for credentials, no attachments, no threats or artificial deadlines.',
+        'Contains clear, verifiable actions and normal, expected HR communication.'
+      ],
+      tip: 'Even for safe messages, it\'s good practice to open Workday from your bookmarks rather than a link.'
+    },
+    {
+      id: 'linkedin-ceo',
+      group: 'Yesterday',
+      fromName: 'LinkedIn Notifications',
+      fromAddr: 'message@linkedin-update.com',
+      subject: 'New Message From CEO — View Now',
+      preview: 'Sanjay, you have a new confidential message from an executive. Click the link to view on our secure site…',
+      time: 'Wed 4:47 PM',
+      fullDate: 'Wed 10/8/2025 4:47 PM',
+      color: '#0a66c2',
+      type: 'phishing',
+      body: `
+        <div class="brand-hdr"><div class="brand-logo" style="background:#0a66c2">in</div><div><b>LinkedIn</b><br><span style="color:#616161;font-size:12px">Messaging</span></div></div>
+        <p>Sanjay,</p>
+        <p>You have a new <b>confidential message</b> from an executive. Click the link to view on our secure site:</p>
+        <p><span class="lnk" data-url="https://linkedin-update.com/Sanjay">https://linkedin-update.com/Sanjay</span></p>
+        <p>You must sign in to view the message.</p>
+        <p class="sig">Best,<br>LinkedIn Team</p>
+        <p class="fine">This email was intended for Sanjay Tarakanambi. You are receiving LinkedIn notification emails.</p>`,
+      flags: [
+        'Sender domain is <b>linkedin-update.com</b>, not <b>linkedin.com</b>. Real LinkedIn mail comes from linkedin.com.',
+        'Asks you to sign in through the provided link — a classic credential-harvesting technique.',
+        'Social-engineering lure: a "confidential message from the CEO" plays on curiosity and authority.',
+        'The logo and branding are easy to copy; the sender address is what matters.'
+      ],
+      tip: 'Verify by opening LinkedIn directly in your browser or app — never via the emailed link.'
+    },
+    {
+      id: 'maria-agenda',
+      group: 'Yesterday',
+      fromName: 'Maria Lopez',
+      fromAddr: 'maria.lopez@gesmn.org',
+      subject: 'Draft Event Agenda — feedback requested by Friday',
+      preview: 'Sanjay — attached is the draft agenda for next month\u2019s community event. Could you review pages 2–3 and send any…',
+      time: 'Wed 2:10 PM',
+      fullDate: 'Wed 10/8/2025 2:10 PM',
+      color: '#038387',
+      type: 'safe',
+      attachments: [{ name: 'Community_Event_Agenda_DRAFT.docx', size: '48 KB', kind: 'W', color: '#2b579a' }],
+      body: `
+        <p>Sanjay —</p>
+        <p>Attached is the draft agenda for next month’s community event. Could you review pages 2–3 and send any edits by <b>Friday</b>?</p>
+        <p>I’ll update the shared Google Doc as edits come in: <span class="lnk" data-url="https://docs.google.com/document/d/1xK9…/edit">https://docs.google.com/document/d/1xK9…/edit</span> (owner: maria.lopez@gesmn.org)</p>
+        <p>Thanks again for volunteering to co-host — looking forward to it!</p>
+        <p class="sig">Thanks,<br>Maria<br><br>Maria Lopez<br>Community Programs Coordinator<br>Goodwill-Easter Seals Minnesota</p>`,
+      flags: [
+        'Personal greeting and specific context you would recognize (the event you agreed to co-host).',
+        'Sender is a known partner and the domain <b>gesmn.org</b> matches her organization.',
+        'The attachment is expected and relevant, and the ask is specific and reasonable.',
+        'Link points to a standard service (<b>docs.google.com</b>) and the document owner matches the sender.'
+      ],
+      tip: 'Expected attachments from known contacts are normal — but if anything felt off, a quick call to Maria would confirm.'
+    },
+    {
+      id: 'greatdeals',
+      group: 'Yesterday',
+      fromName: 'GreatDeals Daily',
+      fromAddr: 'offers@shopnowpromo.io',
+      subject: '90% OFF — Limited Time! Designer Bags Under $50',
+      preview: 'Huge sale — everything must go! Click to shop now and claim your discount. Free shipping on orders over $25…',
+      time: 'Wed 11:32 AM',
+      fullDate: 'Wed 10/8/2025 11:32 AM',
+      color: '#ca5010',
+      type: 'spam',
+      body: `
+        <div class="promo-hero"><h2>90% OFF EVERYTHING</h2><p>Designer Bags Under $50 — TODAY ONLY!</p></div>
+        <p>Huge sale — everything must go! Click to shop now and claim your discount.</p>
+        <p style="text-align:center"><span class="cta lnk" style="background:#e3342f;text-decoration:none" data-url="https://shopnowpromo.io/claim?u=8823">SHOP NOW &amp; CLAIM DISCOUNT</span></p>
+        <p>Free shipping on orders over $25. Hurry — deals end at midnight!</p>
+        <p class="fine">You are receiving this because you opted in to GreatDeals Daily offers. <span class="lnk" data-url="https://shopnowpromo.io/unsub?u=8823">Unsubscribe here</span> | GreatDeals Daily, PO Box 4410</p>`,
+      flags: [
+        'Mass-marketing tone with an unrealistic discount ("90% off designer bags").',
+        'Generic greeting — nothing addressed to you specifically; clearly bulk-sent.',
+        'Unknown sender you never signed up with, on an unfamiliar domain.',
+        'Not dangerous in the way phishing is (no credential request), but low value and clutter.'
+      ],
+      tip: 'Delete it or mark as junk. Avoid clicking "Unsubscribe" in mail you never subscribed to — it confirms your address is live.'
+    },
+    {
+      id: 'cryptowins',
+      group: 'Tuesday',
+      fromName: 'CryptoWins',
+      fromAddr: 'alerts@cryptowins.today',
+      subject: 'Double Your Crypto in 7 Days — Risk-Free',
+      preview: 'Invest $100 now and watch it double in a week. Our exclusive trading bot guarantees returns. Sign up today.',
+      time: 'Tue 5:20 PM',
+      fullDate: 'Tue 10/7/2025 5:20 PM',
+      color: '#498205',
+      type: 'spam',
+      body: `
+        <div class="crypto-hero"><h2>🚀 DOUBLE YOUR CRYPTO IN 7 DAYS</h2><p>100% Risk-Free • Guaranteed Returns</p></div>
+        <p>Invest <b>$100</b> now and watch it double in a week. Our exclusive AI trading bot <b>guarantees returns</b> — over 12,000 members already cashing out daily.</p>
+        <p style="text-align:center"><span class="cta lnk" style="background:#f4d35e;color:#0b1e3a;text-decoration:none" data-url="https://cryptowins.today/join">SIGN UP TODAY</span></p>
+        <p>Limited spots available. Don’t miss out!</p>
+        <p class="fine">CryptoWins is not a registered investment advisor. Results not typical.</p>`,
+      flags: [
+        'Get-rich-quick claims ("double in 7 days") — no legitimate investment can promise this.',
+        '"Guaranteed returns" and "risk-free" are textbook scam indicators.',
+        'Unsolicited, from an unknown sender with a throwaway-style domain (<b>.today</b>).',
+        'Pressure tactics ("limited spots", "don\'t miss out") to rush a decision.'
+      ],
+      tip: 'Delete and report as junk. If it ever asks for a wallet key or payment details, treat it as a scam.'
+    },
+    {
+      id: 'aws-invoice',
+      group: 'Tuesday',
+      fromName: 'AWS Billing',
+      fromAddr: 'no-reply@amazonaws.com',
+      subject: 'Invoice Available for Account ending in 1234',
+      preview: 'Hello, your October invoice is available. You can view it by logging into the AWS Console. No action required if…',
+      time: 'Tue 9:05 AM',
+      fullDate: 'Tue 10/7/2025 9:05 AM',
+      color: '#da3b01',
+      type: 'safe',
+      body: `
+        <div class="brand-hdr"><div class="brand-logo" style="background:#232f3e;color:#ff9900">aws</div><div><b>Amazon Web Services</b><br><span style="color:#616161;font-size:12px">Billing &amp; Cost Management</span></div></div>
+        <p>Hello,</p>
+        <p>Your October invoice is available. You can view it by logging into the AWS Console:</p>
+        <p><span class="lnk" data-url="https://console.aws.amazon.com/">https://console.aws.amazon.com/</span></p>
+        <div class="aws-box">
+          <div class="row"><span class="k">Account</span><span>••••••••1234</span></div>
+          <div class="row"><span class="k">Billing period</span><span>Sep 1 – Sep 30, 2025</span></div>
+          <div class="row"><span class="k">Invoice</span><span>Available in Billing &amp; Cost Management</span></div>
+        </div>
+        <p>No action required if you have already paid.</p>
+        <p class="sig">Thank you,<br>AWS Billing</p>
+        <p class="fine">Amazon Web Services, Inc. is a subsidiary of Amazon.com, Inc. This message was produced and distributed by Amazon Web Services, Inc., 410 Terry Ave. North, Seattle, WA 98109-5210.</p>`,
+      flags: [
+        'Legitimate, routine service notification with no urgency or threat.',
+        'Does not ask for credentials or payment in the email — it simply directs you to the official console URL (<b>console.aws.amazon.com</b>).',
+        'Sender domain <b>amazonaws.com</b> aligns with the service.',
+        'Says "no action required" — scams almost always demand action.'
+      ],
+      tip: 'Best practice: navigate to the AWS Console manually or via a bookmark rather than clicking, even when the mail looks right.'
+    }
+  ];
+
+  const LABELS = { phishing: 'Phishing', spam: 'Spam', safe: 'Safe' };
+  const STORAGE_KEY = null; // Intentionally no persistence: nothing is stored anywhere.
+
+  let state = { selectedId: null, read: {}, answers: {} };
+
+  const listEl = document.getElementById('listItems');
+  const paneEl = document.getElementById('readingPane');
+  const toastEl = document.getElementById('toast');
+  let toastTimer = null;
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+  function initials(name) {
+    const parts = name.trim().split(/\s+/);
+    return (parts[0][0] + (parts[1] ? parts[1][0] : '')).toUpperCase();
+  }
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2200);
+  }
+
+  /* ---------------- Score ---------------- */
+  function updateScore() {
+    const ids = Object.keys(state.answers);
+    const correct = ids.filter(id => state.answers[id] === EMAILS.find(e => e.id === id).type).length;
+    document.getElementById('scoreCorrect').textContent = correct;
+    document.getElementById('scoreAnswered').textContent = ids.length;
+    const unread = EMAILS.filter(e => !state.read[e.id]).length;
+    const c1 = document.getElementById('inboxCount');
+    const c2 = document.getElementById('favInboxCount');
+    c1.textContent = unread || '';
+    c2.textContent = unread || '';
+  }
+
+  /* ---------------- Message list ---------------- */
+  function renderList() {
+    let html = '';
+    let lastGroup = null;
+    for (const e of EMAILS) {
+      if (e.group !== lastGroup) {
+        html += `<div class="group-hdr">${esc(e.group)}</div>`;
+        lastGroup = e.group;
+      }
+      const cls = ['msg', state.read[e.id] ? '' : 'unread', state.selectedId === e.id ? 'selected' : ''].join(' ');
+      const ans = state.answers[e.id];
+      let verdict = '';
+      if (ans) {
+        const ok = ans === e.type;
+        verdict = `<span class="verdict ${ok ? 'ok' : 'bad'}">${ok ? '✓ Correct' : '✗ Incorrect'}</span>`;
+      }
+      const clip = e.attachments ? `<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m13.5 7.5-5.3 5.3a1.6 1.6 0 0 1-2.3-2.3l6-6a3 3 0 0 1 4.2 4.2l-6.5 6.5a4.4 4.4 0 0 1-6.2-6.2L9 3.4"/></svg>` : '';
+      html += `
+        <div class="${cls}" role="listitem" tabindex="0" data-id="${e.id}" aria-label="${esc(e.fromName)}, ${esc(e.subject)}">
+          <span class="check" aria-hidden="true"></span>
+          <div class="av" style="background:${e.color}" aria-hidden="true">${esc(initials(e.fromName))}</div>
+          <div class="body">
+            <div class="row1"><span class="sender">${esc(e.fromName)}</span></div>
+            <div class="row2"><span class="subject">${esc(e.subject)}</span><span class="time">${esc(e.time)}</span></div>
+            <div class="preview">${esc(e.preview)}</div>
+            ${(clip || verdict) ? `<div class="meta">${clip}${verdict}</div>` : ''}
+          </div>
+        </div>`;
+    }
+    listEl.innerHTML = html;
+  }
+
+  /* ---------------- Reading pane ---------------- */
+  function renderPane() {
+    const e = EMAILS.find(x => x.id === state.selectedId);
+    if (!e) {
+      const answered = Object.keys(state.answers).length;
+      paneEl.innerHTML = `
+        <div class="empty-state">
+          <svg width="176" height="176" viewBox="0 0 200 200" aria-hidden="true">
+            <defs>
+              <linearGradient id="esPaper" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#c58cf5"/><stop offset=".55" stop-color="#7fb6f7"/><stop offset="1" stop-color="#d9ecff"/></linearGradient>
+              <linearGradient id="esBack" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#4f93e8"/><stop offset="1" stop-color="#2f6fd0"/></linearGradient>
+              <linearGradient id="esFront" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#f7f7f7"/><stop offset="1" stop-color="#dcdcdc"/></linearGradient>
+              <linearGradient id="esFlap" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ffffff"/><stop offset="1" stop-color="#ececec"/></linearGradient>
+            </defs>
+            <path d="M18 88 L100 30 L182 88 V172 a8 8 0 0 1 -8 8 H26 a8 8 0 0 1 -8 -8 Z" fill="url(#esBack)"/>
+            <rect x="46" y="20" width="108" height="118" rx="6" fill="url(#esPaper)"/>
+            <rect x="46" y="20" width="108" height="118" rx="6" fill="url(#esFlap)" opacity=".6"/>
+            <path d="M18 88 L100 142 L182 88 V172 a8 8 0 0 1 -8 8 H26 a8 8 0 0 1 -8 -8 Z" fill="url(#esFront)"/>
+            <path d="M18 172 L100 118 L182 172 a8 8 0 0 1 -8 8 H26 a8 8 0 0 1 -8 -8 Z" fill="#f4f4f4"/>
+            <path d="M18 88 L100 142 L182 88" fill="none" stroke="#c9c9c9" stroke-width="1.5"/>
+          </svg>
+          <div class="es-title">Select an item to read</div>
+          <div class="es-sub">${answered === 0 ? 'Nothing is selected' : `${answered} of 8 messages classified`}</div>
+        </div>`;
+      return;
+    }
+    const ans = state.answers[e.id];
+    const attachments = e.attachments ? `
+      <div class="rp-attachments">
+        ${e.attachments.map(a => `
+          <div class="attach" data-attach="${esc(a.name)}" title="Attachment (disabled in simulation)">
+            <div class="aicon" style="background:${a.color}">${esc(a.kind)}</div>
+            <div><div class="aname">${esc(a.name)}</div><div class="asize">${esc(a.size)}</div></div>
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="#616161" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 5 5 5-5"/></svg>
+          </div>`).join('')}
+      </div>` : '';
+
+    let result = '';
+    if (ans) {
+      const ok = ans === e.type;
+      const heading = e.type === 'safe' ? 'Why this is safe' : 'Red flags';
+      result = `
+        <div class="result ${ok ? 'ok' : 'bad'}" role="alert">
+          <div class="r-head">${ok ? '✓ Correct!' : '✗ Not quite.'}</div>
+          <div class="r-type">You marked it <b>${LABELS[ans]}</b>. This email is <b>${LABELS[e.type]}</b>.</div>
+          <div><b>${heading}:</b></div>
+          <ul>${e.flags.map(f => `<li>${f}</li>`).join('')}</ul>
+          <div class="tip">Tip: ${e.tip}</div>
+        </div>`;
+    }
+
+    const allDone = Object.keys(state.answers).length === EMAILS.length;
+    const correct = Object.keys(state.answers).filter(id => state.answers[id] === EMAILS.find(x => x.id === id).type).length;
+    const summary = allDone ? `
+      <div class="done-summary">
+        <strong>Exercise complete — you scored ${correct} / 8.</strong>
+        ${correct === 8 ? ' Perfect! You spotted every trick.' : ' Review the messages marked ✗ in the list to see what you missed, then press <b>Reset exercise</b> to try again.'}
+      </div>` : '';
+
+    paneEl.innerHTML = `
+      <div class="rp-subject">${esc(e.subject)}</div>
+      <div class="rp-header">
+        <div class="avatar" style="background:${e.color}">${esc(initials(e.fromName))}</div>
+        <div class="rp-from">
+          <div class="rp-name">${esc(e.fromName)} <span class="rp-addr">&lt;${esc(e.fromAddr)}&gt;</span></div>
+          <div class="rp-to">To: <span class="hint" title="sanjay.tarakanambi@graco.com">Sanjay Tarakanambi</span></div>
+        </div>
+        <div class="rp-right">
+          <div class="rp-date">${esc(e.fullDate)}</div>
+          <div class="rp-actions">
+            <button class="rp-act" type="button" data-disabled title="Reply"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m8 5-5 4.5L8 14"/><path d="M3.5 9.5H12a5 5 0 0 1 5 5v1"/></svg></button>
+            <button class="rp-act" type="button" data-disabled title="Reply all"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m7 5-5 4.5L7 14M11 5 6 9.5l5 4.5"/><path d="M6.5 9.5H12a5 5 0 0 1 5 5v1"/></svg></button>
+            <button class="rp-act" type="button" data-disabled title="Forward"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m12 5 5 4.5-5 4.5"/><path d="M16.5 9.5H8a5 5 0 0 0-5 5v1"/></svg></button>
+            <button class="rp-act" type="button" data-disabled title="More actions"><svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor"><circle cx="5" cy="10" r="1.6"/><circle cx="10" cy="10" r="1.6"/><circle cx="15" cy="10" r="1.6"/></svg></button>
+          </div>
+        </div>
+      </div>
+      ${attachments}
+      <div class="rp-body">${e.body}</div>
+      <div class="train">
+        <div class="train-title"><span class="dot"></span>Training: How would you classify this message?</div>
+        <div class="train-btns">
+          <button class="tbtn phish ${ans === 'phishing' ? 'chosen' : ''}" type="button" data-answer="phishing" ${ans ? 'disabled' : ''}>
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2.5 3.5 5v5c0 3.5 2.8 6.4 6.5 7.5 3.7-1.1 6.5-4 6.5-7.5V5L10 2.5z"/><path d="M10 7v3.5"/><circle cx="10" cy="13" r=".6" fill="currentColor"/></svg>
+            Mark as Phishing
+          </button>
+          <button class="tbtn spam ${ans === 'spam' ? 'chosen' : ''}" type="button" data-answer="spam" ${ans ? 'disabled' : ''}>
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><path d="m5 5 10 10"/></svg>
+            Mark as Spam
+          </button>
+          <button class="tbtn safe ${ans === 'safe' ? 'chosen' : ''}" type="button" data-answer="safe" ${ans ? 'disabled' : ''}>
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.5"/><path d="m6.5 10 2.5 2.5 4.5-5"/></svg>
+            Mark as Safe
+          </button>
+        </div>
+        ${result}
+      </div>
+      ${summary}`;
+    paneEl.scrollTop = 0;
+  }
+
+  /* ---------------- Actions ---------------- */
+  function selectEmail(id) {
+    state.selectedId = id;
+    state.read[id] = true;
+    renderList();
+    renderPane();
+    updateScore();
+  }
+  function answer(id, choice) {
+    if (state.answers[id]) return;
+    state.answers[id] = choice;
+    renderList();
+    renderPane();
+    updateScore();
+    const e = EMAILS.find(x => x.id === id);
+    const ok = choice === e.type;
+    if (Object.keys(state.answers).length === EMAILS.length) {
+      const correct = Object.keys(state.answers).filter(k => state.answers[k] === EMAILS.find(x => x.id === k).type).length;
+      toast(`Exercise complete — ${correct} of 8 correct.`);
+    } else {
+      toast(ok ? 'Correct!' : `Not quite — this one is ${LABELS[e.type]}.`);
+    }
+  }
+  function reset() {
+    state = { selectedId: null, read: {}, answers: {} };
+    renderList();
+    renderPane();
+    updateScore();
+    toast('Exercise reset. All messages are unread again.');
+  }
+
+  /* ---------------- Events (single delegated handler) ---------------- */
+  document.addEventListener('click', ev => {
+    const t = ev.target;
+
+    const msg = t.closest('.msg');
+    if (msg) { selectEmail(msg.dataset.id); return; }
+
+    const ab = t.closest('[data-answer]');
+    if (ab && !ab.disabled) { answer(state.selectedId, ab.dataset.answer); return; }
+
+    if (t.closest('#resetBtn')) { reset(); return; }
+
+    const lnk = t.closest('.lnk');
+    if (lnk) {
+      ev.preventDefault();
+      toast(`Simulation: link disabled. It claims to go to ${lnk.dataset.url || 'an external site'}`);
+      return;
+    }
+    const att = t.closest('.attach');
+    if (att) {
+      toast(`Simulation: attachments cannot be opened. (${att.dataset.attach})`);
+      return;
+    }
+    if (t.closest('[data-disabled]')) {
+      toast('This control is decorative in the training simulation.');
+    }
+  });
+
+  document.addEventListener('keydown', ev => {
+    if (ev.key === 'Enter' || ev.key === ' ') {
+      const msg = ev.target.closest && ev.target.closest('.msg');
+      if (msg) { ev.preventDefault(); selectEmail(msg.dataset.id); }
+    }
+    if (ev.key === 'Enter' && ev.target.tagName === 'INPUT') {
+      ev.preventDefault();
+      ev.target.value = '';
+      toast('Search is disabled in this training simulation.');
+    }
+  });
+
+  // Show the real URL on hover for links (teaches "hover before you click").
+  document.addEventListener('mouseover', ev => {
+    const lnk = ev.target.closest && ev.target.closest('.lnk');
+    if (lnk && lnk.dataset.url && !lnk.title) lnk.title = lnk.dataset.url;
+  });
+
+  renderList();
+  renderPane();
+  updateScore();
+})();
+</script>
+</body>
+</html>
