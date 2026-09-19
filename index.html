@@ -822,7 +822,7 @@
   <div class="modal">
     <div class="modal-head">
       <div class="modal-title" id="resultsTitle">Exercise complete</div>
-      <div class="modal-sub">Phishing Training Inbox — Results</div>
+      <div class="modal-sub">Phishing Training Inbox: Results</div>
     </div>
     <div class="modal-score">
       <div class="big"><span id="resScore">0</span><small>/8 correct</small></div>
@@ -1327,7 +1327,7 @@
     let y = 66;
 
     doc.setFont('helvetica', 'bold'); doc.setFontSize(20); doc.setTextColor(15, 108, 189);
-    doc.text('Phishing Training Inbox \u2014 Results', M, y);
+    doc.text('Phishing Training Inbox: Results', M, y);
     y += 22;
     doc.setFont('helvetica', 'normal'); doc.setFontSize(11); doc.setTextColor(97, 97, 97);
     doc.text('Date: ' + dateStr, M, y);
@@ -1389,10 +1389,6 @@
     doc.setDrawColor(200, 200, 200);
     const tableTop = y - rows.reduce((a, r) => a + Math.max(26, doc.splitTextToSize(r.subject, cols[1].w - PAD * 2).length * LH + PAD * 2), 0) - 24;
     doc.rect(M, tableTop, W, y - tableTop);
-
-    y += 28;
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(120, 120, 120);
-    doc.text('Generated locally by the Phishing Training Inbox classroom exercise. All emails, senders, and links in the exercise are fictional.', M, y, { maxWidth: W });
 
     doc.save('Phishing_Quiz_Results.pdf');
     toast('Phishing_Quiz_Results.pdf downloaded.');
