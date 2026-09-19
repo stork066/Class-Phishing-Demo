@@ -835,7 +835,6 @@
         Download My Results (PDF)
       </button>
       <button class="dl-btn secondary" id="closeResultsBtn" type="button">Review inbox</button>
-      <div class="note">Results exist only in this browser tab. Nothing is saved or sent anywhere; the PDF is created on your computer.</div>
     </div>
   </div>
 </div>
@@ -1266,7 +1265,7 @@
     updateScore();
     if (Object.keys(state.answers).length === EMAILS.length) {
       const correct = state.log.filter(r => r.ok).length;
-      toast(`Exercise complete — ${correct} of 8 correct.`);
+      toast(`Exercise complete: ${correct} of 8 correct.`);
       setTimeout(showResults, 350);
     } else {
       toast(ok ? 'Correct!' : `Not quite — this one is ${LABELS[e.type]}.`);
@@ -1292,7 +1291,7 @@
     const correct = rows.filter(r => r.ok).length;
     document.getElementById('resScore').textContent = correct;
     document.getElementById('resMsg').textContent =
-      correct === 8 ? 'Perfect score — you spotted every trick.' :
+      correct === 8 ? 'Perfect score! You spotted every trick.' :
       correct >= 6 ? 'Nice work. Review the rows marked ✗ to see what you missed.' :
       'Good effort. Re-read the red-flag explanations for the rows marked ✗, then try again.';
     document.getElementById('resBody').innerHTML = `
